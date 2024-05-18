@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:talk_in_web/services/auth_service.dart';
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -17,7 +19,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final authServiceViewModel = Provider.of<AuthService>(context);
+    return authServiceViewModel.loading?Scaffold(
+      backgroundColor: Colors.black,
+      body: Align(
+        alignment: Alignment.center,
+        child: CircularProgressIndicator(
+          color: Colors.white,backgroundColor: Colors.black,
+        ),
+      ),
+    ):Scaffold(
       backgroundColor: Colors.black,
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,
@@ -160,18 +171,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 String email = emailController.text;
                                 String password = passwordController.text;
                                 if(name.isEmpty){
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.black26,content: Text("Name field is required",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)));
                                   return null;
                                 }
                                 if(email.isEmpty){
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.black26,content: Text("Email field is required",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)));
                                   return null;
                                 }
                                 if(password.isEmpty){
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.black26,content: Text("Password field is required",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)));
                                   return null;
                                 }
                                 if(password.length<8){
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.black26,content: Text("Password should be 8 characters long",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)));
                                   return null;
                                 }
-                                AuthService().createAnAccount(context,name, email, password);
+                                authServiceViewModel.createAnAccount(context,name, email, password);
                             },
                             child: Text("Create An Account",style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold,color: Colors.white),),
                             style: ButtonStyle(
