@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:talk_in_web/presentation/screens/sign_in_screen.dart';
 import 'package:talk_in_web/presentation/screens/signup_screen.dart';
+import 'package:talk_in_web/services/auth_service.dart';
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});
 
@@ -108,7 +109,7 @@ class _EntryScreenState extends State<EntryScreen> {
                     children: [
                       GestureDetector(
                         onTap: (){
-
+                          AuthService().GoogleAuthentication();
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
@@ -117,7 +118,7 @@ class _EntryScreenState extends State<EntryScreen> {
                       ),
                       GestureDetector(
                         onTap: (){
-
+                          AuthService().FacebookAuthentication();
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
@@ -126,7 +127,7 @@ class _EntryScreenState extends State<EntryScreen> {
                       ),
                       GestureDetector(
                         onTap: (){
-
+                          AuthService().TwitterAuthentication();
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
@@ -135,7 +136,7 @@ class _EntryScreenState extends State<EntryScreen> {
                       ),
                       GestureDetector(
                         onTap: (){
-
+                          AuthService().YahooAuthentication();
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
