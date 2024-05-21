@@ -109,7 +109,7 @@ class _EntryScreenState extends State<EntryScreen> {
                     children: [
                       GestureDetector(
                         onTap: (){
-                          AuthService().GoogleAuthentication();
+                          AuthService().GoogleAuthentication(context);
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),

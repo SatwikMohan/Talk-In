@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:talk_in_web/presentation/screens/home_screen.dart';
 import 'package:talk_in_web/services/data_service.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert' show json;
+import 'dart:convert' show json, jsonDecode, jsonEncode;
+
+import 'package:talk_in_web/services/user_service.dart';
 
 class AuthService extends ChangeNotifier{
 
@@ -72,7 +75,7 @@ class AuthService extends ChangeNotifier{
     }
   }
 
-  void GoogleAuthentication() async{
+  void GoogleAuthentication(BuildContext context) async{
     try{
       setLoading(true);
       GoogleAuthProvider authProvider = GoogleAuthProvider();
@@ -80,6 +83,30 @@ class AuthService extends ChangeNotifier{
         final UserCredential userCredential = await auth.signInWithPopup(authProvider);
         User? user = userCredential.user;
         print(user);
+        if(user!=null){
+          final datasnap = await FirebaseDatabase.instance.ref("Users").child(user!.uid).get();
+          final data = datasnap.value;
+          if(data!=null){
+            print("Already a user");
+            print(data);
+            final result = jsonDecode(jsonEncode(data));
+            UserService.userData = result;
+            print(UserService.userData);
+            setLoading(false);
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
+              return HomeScreen();
+            }));
+          }else{
+            bool isUserAdded = await DataService().addUserToFirebase(context,user!.uid, user!.displayName.toString(), user!.email.toString(), "123456");
+            if(isUserAdded) {
+              setLoading(false);
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) {
+                return HomeScreen();
+              }));
+            }
+          }
+        }
         setLoading(false);
       } catch (e) {
         setLoading(false);
