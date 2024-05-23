@@ -6,6 +6,7 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:talk_in_web/services/user_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../services/data_service.dart';
 class MessagingScreen extends StatefulWidget {
@@ -67,7 +68,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
                       itemBuilder: (BuildContext context,DataSnapshot snapshot,Animation<double> animation,int index){
                         final result=snapshot.value;
                         final data = jsonDecode(jsonEncode(result));
-                        print(data);
+                        //print(data);
                         bool isUserMessage=data["SendBy"].toString()==UserService.userData!["id"].toString();
                         Timer(Duration(milliseconds: 500), () {
                           scrollController.jumpTo(scrollController.position.maxScrollExtent);
@@ -82,9 +83,51 @@ class _MessagingScreenState extends State<MessagingScreen> {
                             constraints: BoxConstraints(
                               maxWidth: MediaQuery.of(context).size.width * 0.7,
                             ),
-                            child: Text(
+                            child: data["tag"]=="text"? Text(
                               data["Message"]!=null?data["Message"].toString():"Waiting for the message...",
                               style: TextStyle(color: Colors.white),
+                            ): data["tag"] == "image"? Column(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      Icon(Icons.image,color: Colors.black,size: 100,),
+                                      IconButton(onPressed: () async{
+                                        await launchUrl(Uri.parse(data["MediaUrl"].toString()));
+                                      },
+                                          icon: Icon(Icons.download,color: Colors.white,size: 40,)
+                                      )
+                                    ],
+                                  ),
+                                  Text(data["Message"]!=null?data["Message"].toString():"Waiting for the message...", style: TextStyle(color: Colors.white)),
+                                ],
+                            ) : data["tag"] == "document"? Column(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      Icon(Icons.picture_as_pdf,color: Colors.black,size: 100,),
+                                      IconButton(onPressed: () async{
+                                        await launchUrl(Uri.parse(data["MediaUrl"].toString()));
+                                      },
+                                          icon: Icon(Icons.download,color: Colors.white,size: 40,)
+                                      )
+                                    ],
+                                  ),
+                                  Text(data["Message"]!=null?data["Message"].toString():"Waiting for the message...", style: TextStyle(color: Colors.white)),
+                                ],
+                            ) : Column(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      Icon(Icons.audio_file,color: Colors.black,size: 100,),
+                                      IconButton(onPressed: () async{
+                                        await launchUrl(Uri.parse(data["MediaUrl"].toString()));
+                                      },
+                                          icon: Icon(Icons.download,color: Colors.white,size: 40,)
+                                      )
+                                    ],
+                                  ),
+                                  Text(data["Message"]!=null?data["Message"].toString():"Waiting for the message...", style: TextStyle(color: Colors.white)),
+                                ],
                             ),
                           ),
                         )
@@ -97,9 +140,51 @@ class _MessagingScreenState extends State<MessagingScreen> {
                             constraints: BoxConstraints(
                               maxWidth: MediaQuery.of(context).size.width * 0.7,
                             ),
-                            child: Text(
+                            child: data["tag"]=="text"? Text(
                               data["Message"]!=null?data["Message"].toString():"Waiting for the message...",
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.white),
+                            ): data["tag"] == "image"? Column(
+                              children: [
+                                Stack(
+                                  children: [
+                                    Icon(Icons.image,color: Colors.black,size: 100,),
+                                    IconButton(onPressed: () async{
+                                      await launchUrl(Uri.parse(data["MediaUrl"].toString()));
+                                    },
+                                        icon: Icon(Icons.download,color: Colors.white,size: 40,)
+                                    )
+                                  ],
+                                ),
+                                Text(data["Message"]!=null?data["Message"].toString():"Waiting for the message...", style: TextStyle(color: Colors.white)),
+                              ],
+                            ) : data["tag"] == "document"? Column(
+                              children: [
+                                Stack(
+                                  children: [
+                                    Icon(Icons.picture_as_pdf,color: Colors.black,size: 100,),
+                                    IconButton(onPressed: () async{
+                                      await launchUrl(Uri.parse(data["MediaUrl"].toString()));
+                                    },
+                                        icon: Icon(Icons.download,color: Colors.white,size: 40,)
+                                    )
+                                  ],
+                                ),
+                                Text(data["Message"]!=null?data["Message"].toString():"Waiting for the message...", style: TextStyle(color: Colors.white)),
+                              ],
+                            ) : Column(
+                              children: [
+                                Stack(
+                                  children: [
+                                    Icon(Icons.audio_file,color: Colors.black,size: 100,),
+                                    IconButton(onPressed: () async{
+                                      await launchUrl(Uri.parse(data["MediaUrl"].toString()));
+                                    },
+                                        icon: Icon(Icons.download,color: Colors.white,size: 40,)
+                                    )
+                                  ],
+                                ),
+                                Text(data["Message"]!=null?data["Message"].toString():"Waiting for the message...", style: TextStyle(color: Colors.white)),
+                              ],
                             ),
                           ),
                         );
@@ -137,7 +222,156 @@ class _MessagingScreenState extends State<MessagingScreen> {
                                           controller: messageController,
                                           keyboardType: TextInputType.multiline,
                                           maxLines: null,
-                                          decoration: InputDecoration(border: InputBorder.none, hintText: 'Type Message'),
+                                          decoration: InputDecoration(
+                                              border: InputBorder.none,
+                                              hintText: 'Type Message',
+                                              prefixIcon: PopupMenuButton<int>(
+                                                icon: Icon(Icons.attach_file,color: Colors.black,),
+                                                iconSize: 20,
+                                                iconColor: Colors.black,
+                                                shadowColor: Colors.red,
+                                                itemBuilder: (context)=>[
+                                                  PopupMenuItem(
+                                                    value: 1,
+                                                    child: TextButton.icon(
+                                                        onPressed: (){
+                                                          //tag=image
+                                                          showDialog(context: context, builder:(BuildContext c){
+                                                            TextEditingController controller = TextEditingController();
+                                                            return AlertDialog(
+                                                              title: TextField(
+                                                                controller: controller,
+                                                                keyboardType: TextInputType.multiline,
+                                                                maxLines: null,
+                                                                decoration: InputDecoration(
+                                                                  border: InputBorder.none,
+                                                                  hintText: 'Wanna Type A Message',
+                                                                ),
+                                                              ),
+                                                              actions: [
+                                                                TextButton(onPressed: (){
+                                                                  Navigator.of(c).pop();
+                                                                  DataService().addChatToDatabase(context, messageId, "", UserService.userData!["id"].toString(), friendData["id"].toString(),DateTime.now(),"image");
+                                                                  Timer(Duration(milliseconds: 500), () {
+                                                                    scrollController.jumpTo(scrollController.position.maxScrollExtent);
+                                                                  });
+                                                                  }, child: Text("NO")),
+                                                                TextButton(onPressed: (){
+                                                                  if(controller.text.isNotEmpty){
+                                                                    Navigator.of(c).pop();
+                                                                    DataService().addChatToDatabase(context, messageId, controller.text, UserService.userData!["id"].toString(), friendData["id"].toString(),DateTime.now(),"image");
+                                                                    Timer(Duration(milliseconds: 500), () {
+                                                                      scrollController.jumpTo(scrollController.position.maxScrollExtent);
+                                                                    });
+                                                                  }
+                                                                }, child: Text("YES")),
+                                                              ],
+                                                            );
+                                                          });
+                                                        },
+                                                        icon: Icon(Icons.image,color: Colors.black,),
+                                                        label:Text("Images",style: TextStyle(color: Colors.black),)
+                                                    ),
+                                                  ),
+                                                  PopupMenuItem(
+                                                    value: 2,
+                                                    child: TextButton.icon(
+                                                        onPressed: (){
+                                                          //tag=document
+                                                          showDialog(context: context, builder:(BuildContext c){
+                                                            TextEditingController controller = TextEditingController();
+                                                            return AlertDialog(
+                                                              title: TextField(
+                                                                controller: controller,
+                                                                keyboardType: TextInputType.multiline,
+                                                                maxLines: null,
+                                                                decoration: InputDecoration(
+                                                                  border: InputBorder.none,
+                                                                  hintText: 'Wanna Type A Message',
+                                                                ),
+                                                              ),
+                                                              actions: [
+                                                                TextButton(onPressed: (){
+                                                                  Navigator.of(c).pop();
+                                                                  DataService().addChatToDatabase(context, messageId, "", UserService.userData!["id"].toString(), friendData["id"].toString(),DateTime.now(),"document");
+                                                                  Timer(Duration(milliseconds: 500), () {
+                                                                    scrollController.jumpTo(scrollController.position.maxScrollExtent);
+                                                                  });
+                                                                }, child: Text("NO")),
+                                                                TextButton(onPressed: (){
+                                                                  if(controller.text.isNotEmpty){
+                                                                    Navigator.of(c).pop();
+                                                                    DataService().addChatToDatabase(context, messageId, controller.text, UserService.userData!["id"].toString(), friendData["id"].toString(),DateTime.now(),"document");
+                                                                    Timer(Duration(milliseconds: 500), () {
+                                                                      scrollController.jumpTo(scrollController.position.maxScrollExtent);
+                                                                    });
+                                                                  }
+                                                                }, child: Text("YES")),
+                                                              ],
+                                                            );
+                                                          });
+                                                        },
+                                                        icon: Icon(Icons.picture_as_pdf,color: Colors.black,),
+                                                        label:Text("Document",style: TextStyle(color: Colors.black),)
+                                                    ),
+                                                  ),
+                                                  PopupMenuItem(
+                                                    value: 3,
+                                                    child: TextButton.icon(
+                                                        onPressed: (){
+                                                          //tag=audio
+                                                          showDialog(context: context, builder:(BuildContext c){
+                                                            TextEditingController controller = TextEditingController();
+                                                            return AlertDialog(
+                                                              title: TextField(
+                                                                controller: controller,
+                                                                keyboardType: TextInputType.multiline,
+                                                                maxLines: null,
+                                                                decoration: InputDecoration(
+                                                                  border: InputBorder.none,
+                                                                  hintText: 'Wanna Type A Message',
+                                                                ),
+                                                              ),
+                                                              actions: [
+                                                                TextButton(onPressed: (){
+                                                                  Navigator.of(c).pop();
+                                                                  DataService().addChatToDatabase(context, messageId, "", UserService.userData!["id"].toString(), friendData["id"].toString(),DateTime.now(),"audio");
+                                                                  Timer(Duration(milliseconds: 500), () {
+                                                                    scrollController.jumpTo(scrollController.position.maxScrollExtent);
+                                                                  });
+                                                                }, child: Text("NO")),
+                                                                TextButton(onPressed: (){
+                                                                  if(controller.text.isNotEmpty){
+                                                                    Navigator.of(c).pop();
+                                                                    DataService().addChatToDatabase(context, messageId, controller.text, UserService.userData!["id"].toString(), friendData["id"].toString(),DateTime.now(),"audio");
+                                                                    Timer(Duration(milliseconds: 500), () {
+                                                                      scrollController.jumpTo(scrollController.position.maxScrollExtent);
+                                                                    });
+                                                                  }
+                                                                }, child: Text("YES")),
+                                                              ],
+                                                            );
+                                                          });
+                                                        },
+                                                        icon: Icon(Icons.audio_file,color: Colors.black,),
+                                                        label:Text("Audio",style: TextStyle(color: Colors.black),)
+                                                    ),
+                                                  ),
+                                                ],
+                                                offset: Offset(0, 100),
+                                                color: Colors.white,
+                                                elevation: 3,
+                                                onSelected: (value) {
+                                                  if (value == 1) {
+
+                                                  } else if (value == 2) {
+
+                                                  }else{
+
+                                                  }
+                                                },
+                                              ),
+                                          ),
                                         ),
                                       ),
                                       SizedBox(width: 20 / 4),
@@ -146,7 +380,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
                                         onPressed: () async{
 
                                           if(messageController.text.isNotEmpty){
-                                            DataService().addChatToDatabase(messageId, messageController.text, UserService.userData!["id"].toString(), friendData["id"].toString(),DateTime.now());
+                                            DataService().addChatToDatabase(context,messageId, messageController.text, UserService.userData!["id"].toString(), friendData["id"].toString(),DateTime.now(),"text");
                                             messageController.clear();
                                             Timer(Duration(milliseconds: 500), () {
                                               scrollController.jumpTo(scrollController.position.maxScrollExtent);
