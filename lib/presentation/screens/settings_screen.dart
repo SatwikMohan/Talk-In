@@ -113,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black26,
-        title: Text("Profile",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+        title: Text("Your Profile",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
       ),
       body: Center(
         child: Column(
